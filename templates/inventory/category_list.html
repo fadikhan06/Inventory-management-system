@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Categories — InventoryPro{% endblock %}
+{% block page_title %}Categories{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">🏷️ Categories</h1>
+  {% if user_role == 'admin' %}
+  <a href="{% url 'inventory:category_create' %}" class="btn btn-primary">+ Add Category</a>
+  {% endif %}
+</div>
+
+<div class="card">
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>Name</th><th>Description</th><th>Products</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for cat in categories %}
+        <tr>
+          <td><strong>{{ cat.name }}</strong></td>
+          <td>{{ cat.description|default:"—" }}</td>
+          <td>{{ cat.products.count }}</td>
+          <td class="d-flex gap-1">
+            {% if user_role == 'admin' %}
+            <a href="{% url 'inventory:category_edit' cat.pk %}" class="btn btn-secondary btn-sm">Edit</a>
+            <form method="post" action="{% url 'inventory:category_delete' cat.pk %}" style="margin:0">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger btn-sm" data-confirm="Delete category {{ cat.name }}?">Delete</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="text-muted" style="text-align:center;padding:2rem;">No categories yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

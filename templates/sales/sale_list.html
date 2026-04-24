@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Sales History — InventoryPro{% endblock %}
+{% block page_title %}Sales History{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">📋 Sales History</h1>
+  <a href="{% url 'sales:sale_create' %}" class="btn btn-primary">+ New Sale</a>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" class="d-flex gap-2 flex-wrap" style="flex:1">
+      <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Search invoice or customer..." style="max-width:260px">
+      <select name="status" class="form-select" style="max-width:160px">
+        <option value="">All Statuses</option>
+        <option value="completed" {% if selected_status == 'completed' %}selected{% endif %}>Completed</option>
+        <option value="voided" {% if selected_status == 'voided' %}selected{% endif %}>Voided</option>
+      </select>
+      <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+      {% if q or selected_status %}<a href="{% url 'sales:sale_list' %}" class="btn btn-secondary btn-sm">Clear</a>{% endif %}
+    </form>
+  </div>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr><th>Invoice #</th><th>Date</th><th>Customer</th><th>Cashier</th><th>Items</th><th>Total</th><th>Status</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for sale in sales %}
+        <tr>
+          <td><a href="{% url 'sales:sale_detail' sale.pk %}" style="font-weight:600">{{ sale.invoice_number }}</a></td>
+          <td>{{ sale.created_at|date:"M d, Y H:i" }}</td>
+          <td>{{ sale.customer_name|default:"Walk-in" }}</td>
+          <td>{{ sale.cashier.username|default:"—" }}</td>
+          <td>{{ sale.items.count }}</td>
+          <td>${{ sale.total|floatformat:2 }}</td>
+          <td>
+            {% if sale.status == 'completed' %}<span class="badge badge-success">Completed</span>
+            {% else %}<span class="badge badge-danger">Voided</span>{% endif %}
+          </td>
+          <td class="d-flex gap-1">
+            <a href="{% url 'sales:sale_detail' sale.pk %}" class="btn btn-secondary btn-sm">View</a>
+            <a href="{% url 'sales:sale_pdf' sale.pk %}" class="btn btn-outline btn-sm">PDF</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" class="text-muted" style="text-align:center;padding:2rem;">No sales found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if is_paginated %}
+  <div class="pagination">
+    {% if page_obj.has_previous %}<a class="page-link" href="?page={{ page_obj.previous_page_number }}">‹</a>{% endif %}
+    <span class="text-muted" style="font-size:0.85rem;">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a class="page-link" href="?page={{ page_obj.next_page_number }}">›</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

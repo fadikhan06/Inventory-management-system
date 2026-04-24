@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Products — InventoryPro{% endblock %}
+{% block page_title %}Products{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">📦 Products</h1>
+  <div class="d-flex gap-2">
+    <a href="{% url 'inventory:product_export_csv' %}" class="btn btn-secondary btn-sm">📥 Export CSV</a>
+    {% if user_role == 'admin' %}
+    <a href="{% url 'inventory:product_create' %}" class="btn btn-primary">+ Add Product</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="get" class="d-flex gap-2 flex-wrap" style="flex:1">
+      <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Search name, SKU, barcode..." style="max-width:280px">
+      <select name="category" class="form-select" style="max-width:200px">
+        <option value="">All Categories</option>
+        {% for cat in categories %}
+          <option value="{{ cat.pk }}" {% if selected_cat == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="btn btn-primary btn-sm">Search</button>
+      {% if q or selected_cat %}<a href="{% url 'inventory:product_list' %}" class="btn btn-secondary btn-sm">Clear</a>{% endif %}
+    </form>
+  </div>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th><th>SKU</th><th>Category</th><th>Cost</th><th>Price</th>
+          <th>Stock</th><th>Status</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for product in products %}
+        <tr>
+          <td>
+            <a href="{% url 'inventory:product_detail' product.pk %}" style="font-weight:600">{{ product.name }}</a>
+            {% if product.barcode %}<div class="text-muted" style="font-size:0.72rem;">🔖 {{ product.barcode }}</div>{% endif %}
+          </td>
+          <td>{{ product.sku|default:"—" }}</td>
+          <td>{{ product.category.name|default:"—" }}</td>
+          <td>${{ product.cost_price }}</td>
+          <td>${{ product.selling_price }}</td>
+          <td>
+            {% if product.is_low_stock %}
+              <span class="low-stock-indicator"></span>
+              <span class="text-danger">{{ product.stock_qty }}</span>
+            {% else %}
+              {{ product.stock_qty }}
+            {% endif %}
+          </td>
+          <td>
+            {% if product.stock_qty > 0 %}<span class="badge badge-success">In Stock</span>
+            {% else %}<span class="badge badge-danger">Out of Stock</span>{% endif %}
+          </td>
+          <td class="d-flex gap-1">
+            <a href="{% url 'inventory:product_detail' product.pk %}" class="btn btn-secondary btn-sm">View</a>
+            {% if user_role == 'admin' %}
+            <a href="{% url 'inventory:product_edit' product.pk %}" class="btn btn-secondary btn-sm">Edit</a>
+            <a href="{% url 'inventory:stock_adjust' product.pk %}" class="btn btn-warning btn-sm">Adjust</a>
+            <form method="post" action="{% url 'inventory:product_delete' product.pk %}" style="margin:0">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger btn-sm" data-confirm="Deactivate {{ product.name }}?">Del</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" class="text-muted" style="text-align:center;padding:2rem;">No products found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if is_paginated %}
+  <div class="pagination">
+    {% if page_obj.has_previous %}<a class="page-link" href="?{% if q %}q={{ q }}&{% endif %}page={{ page_obj.previous_page_number }}">‹</a>{% endif %}
+    <span class="text-muted" style="font-size:0.85rem;">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a class="page-link" href="?{% if q %}q={{ q }}&{% endif %}page={{ page_obj.next_page_number }}">›</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Notifications — InventoryPro{% endblock %}
+{% block page_title %}Notifications{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">🔔 Notifications</h1>
+  <form method="post" action="{% url 'core:mark_all_notifications_read' %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-secondary btn-sm">Mark All Read</button>
+  </form>
+</div>
+
+<div class="card">
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr><th>Type</th><th>Title</th><th>Message</th><th>Date</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        {% for notif in notifications %}
+        <tr id="notif-{{ notif.pk }}" {% if notif.is_read %}style="opacity:0.6"{% endif %}>
+          <td>
+            {% if notif.notification_type == 'low_stock' %}<span class="badge badge-danger">Low Stock</span>
+            {% elif notif.notification_type == 'warning' %}<span class="badge badge-warning">Warning</span>
+            {% else %}<span class="badge badge-info">Info</span>{% endif %}
+          </td>
+          <td style="font-weight:600">{{ notif.title }}</td>
+          <td>{{ notif.message }}</td>
+          <td>{{ notif.created_at|date:"M d, Y H:i" }}</td>
+          <td>
+            {% if not notif.is_read %}
+              <button class="btn btn-secondary btn-sm"
+                onclick="markNotificationRead({{ notif.pk }}, '{{ csrf_token }}')">Mark Read</button>
+            {% else %}
+              <span class="badge badge-secondary">Read</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-muted" style="text-align:center;padding:2rem;">No notifications</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if is_paginated %}
+  <div class="pagination">
+    {% if page_obj.has_previous %}<a class="page-link" href="?page={{ page_obj.previous_page_number }}">‹</a>{% endif %}
+    {% for num in page_obj.paginator.page_range %}
+      <a class="page-link {% if page_obj.number == num %}active{% endif %}" href="?page={{ num }}">{{ num }}</a>
+    {% endfor %}
+    {% if page_obj.has_next %}<a class="page-link" href="?page={{ page_obj.next_page_number }}">›</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

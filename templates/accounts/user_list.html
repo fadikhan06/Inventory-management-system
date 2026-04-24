@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Users — InventoryPro{% endblock %}
+{% block page_title %}User Management{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">👥 Users</h1>
+  <a href="{% url 'accounts:user_create' %}" class="btn btn-primary">+ Add User</a>
+</div>
+
+<div class="card">
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr><th>Username</th><th>Name</th><th>Email</th><th>Role</th><th>Shop</th><th>Status</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td><strong>{{ u.username }}</strong></td>
+          <td>{{ u.get_full_name|default:"—" }}</td>
+          <td>{{ u.email|default:"—" }}</td>
+          <td>
+            {% if u.profile.role == 'admin' %}
+              <span class="badge badge-info">Admin</span>
+            {% else %}
+              <span class="badge badge-secondary">Staff</span>
+            {% endif %}
+          </td>
+          <td>{{ u.profile.shop.name|default:"—" }}</td>
+          <td>
+            {% if u.is_active %}<span class="badge badge-success">Active</span>
+            {% else %}<span class="badge badge-danger">Inactive</span>{% endif %}
+          </td>
+          <td class="d-flex gap-1">
+            <a href="{% url 'accounts:user_edit' u.pk %}" class="btn btn-secondary btn-sm">Edit</a>
+            {% if u != request.user %}
+            <form method="post" action="{% url 'accounts:user_delete' u.pk %}" style="margin:0">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger btn-sm"
+                data-confirm="Deactivate user {{ u.username }}?">Deactivate</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="text-muted" style="text-align:center;padding:2rem;">No users found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

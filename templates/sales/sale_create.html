@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}New Sale — InventoryPro{% endblock %}
+{% block page_title %}New Sale{% endblock %}
+
+{% block content %}
+<div class="pos-layout">
+  <!-- Left: Product picker -->
+  <div>
+    <div class="card" style="margin-bottom:1rem">
+      <div class="card-header"><span class="card-title">🔖 Barcode / SKU Scan</span></div>
+      <div class="card-body">
+        <div class="d-flex gap-2">
+          <input type="text" id="barcode-input" class="form-control" placeholder="Scan barcode or type SKU + Enter..." autofocus>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">📦 Products</span>
+        <select id="cat-filter" class="form-select" style="max-width:180px" onchange="filterProducts(this.value)">
+          <option value="">All Categories</option>
+          {% for cat in categories %}
+          <option value="{{ cat.pk }}">{{ cat.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="card-body" style="padding:0.5rem">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:0.5rem" id="product-grid">
+          {% for product in products %}
+          <button type="button"
+            class="product-btn"
+            data-cat="{{ product.category_id|default:'' }}"
+            onclick="addToCart({{ product.pk }}, '{{ product.name|escapejs }}', '{{ product.selling_price }}', {{ product.stock_qty }})"
+            style="border:1px solid var(--border-color);border-radius:0.5rem;padding:0.75rem;background:var(--bg-secondary);cursor:pointer;text-align:left;transition:background 0.2s;"
+            onmouseover="this.style.background='var(--bg-primary)'"
+            onmouseout="this.style.background='var(--bg-secondary)'">
+            <div style="font-weight:600;font-size:0.875rem;color:var(--text-primary)">{{ product.name }}</div>
+            <div style="color:var(--text-secondary);font-size:0.75rem">{{ product.sku|default:product.barcode|default:"" }}</div>
+            <div style="margin-top:0.25rem">
+              <span style="color:var(--accent);font-weight:700">${{ product.selling_price }}</span>
+              <span style="color:var(--text-secondary);font-size:0.72rem;margin-left:0.4rem">{{ product.stock_qty }} in stock</span>
+            </div>
+          </button>
+          {% empty %}
+          <div class="text-muted" style="padding:2rem;grid-column:1/-1;text-align:center">No products in stock.</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Cart -->
+  <div class="cart-panel">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">🛒 Cart (<span id="cart-count">0</span>)</span>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="clearCart()">Clear</button>
+      </div>
+      <div style="max-height:340px;overflow-y:auto">
+        <table style="width:100%">
+          <thead>
+            <tr>
+              <th>Item</th><th>Qty</th><th>Price</th><th>Total</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="cart-body">
+            <tr><td colspan="5" class="text-muted" style="text-align:center;padding:2rem">Cart is empty</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="padding:1rem;border-top:1px solid var(--border-color)">
+        <form method="post" id="sale-form" action="{% url 'sales:sale_create' %}">
+          {% csrf_token %}
+          <input type="hidden" name="cart_data" id="cart-data" value="[]">
+          <div class="form-group">
+            <label class="form-label">Customer Name</label>
+            {{ form.customer_name }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Discount ($)</label>
+            {{ form.discount }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Notes</label>
+            {{ form.notes }}
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;padding:0.5rem;background:var(--bg-primary);border-radius:0.5rem">
+            <span style="font-size:0.875rem;color:var(--text-secondary)">Total</span>
+            <span style="font-size:1.25rem;font-weight:700;color:var(--accent)">$<span id="cart-total">0.00</span></span>
+          </div>
+          <button type="submit" class="btn btn-success" style="width:100%;justify-content:center;padding:0.75rem;font-size:1rem;">
+            ✓ Complete Sale
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function filterProducts(catId) {
+  document.querySelectorAll('.product-btn').forEach(btn => {
+    if (!catId || btn.dataset.cat === catId) {
+      btn.style.display = '';
+    } else {
+      btn.style.display = 'none';
+    }
+  });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Shop — InventoryPro{% endblock %}
+{% block page_title %}{{ action }} Shop{% endblock %}
+
+{% block content %}
+<div style="max-width:600px">
+  <div class="page-header">
+    <h1 class="page-title">{{ action }} Shop</h1>
+    <a href="{% url 'inventory:shop_list' %}" class="btn btn-secondary btn-sm">← Back</a>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Name *</label>
+            {{ form.name }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone</label>
+            {{ form.phone }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            {{ form.email }}
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Address</label>
+          {{ form.address }}
+        </div>
+        <div class="form-check form-group">
+          {{ form.is_active }}
+          <label class="form-label" style="display:inline">Active</label>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary">{{ action }} Shop</button>
+          <a href="{% url 'inventory:shop_list' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

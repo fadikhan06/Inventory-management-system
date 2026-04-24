@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Shops — InventoryPro{% endblock %}
+{% block page_title %}Shops{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">🏪 Shops</h1>
+  <a href="{% url 'inventory:shop_create' %}" class="btn btn-primary">+ Add Shop</a>
+</div>
+
+<div class="card">
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>Name</th><th>Address</th><th>Phone</th><th>Email</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for shop in shops %}
+        <tr>
+          <td><strong>{{ shop.name }}</strong></td>
+          <td>{{ shop.address|default:"—" }}</td>
+          <td>{{ shop.phone|default:"—" }}</td>
+          <td>{{ shop.email|default:"—" }}</td>
+          <td>{% if shop.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-danger">Inactive</span>{% endif %}</td>
+          <td><a href="{% url 'inventory:shop_edit' shop.pk %}" class="btn btn-secondary btn-sm">Edit</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-muted" style="text-align:center;padding:2rem;">No shops found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
