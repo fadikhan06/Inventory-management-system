@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Adjust Stock — InventoryPro{% endblock %}
+{% block page_title %}Adjust Stock{% endblock %}
+
+{% block content %}
+<div style="max-width:500px">
+  <div class="page-header">
+    <h1 class="page-title">Stock Adjustment</h1>
+    <a href="{% url 'inventory:product_detail' product.pk %}" class="btn btn-secondary btn-sm">← Back</a>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">{{ product.name }}</span>
+      <span class="badge {% if product.is_low_stock %}badge-danger{% else %}badge-success{% endif %}">
+        Current: {{ product.stock_qty }} units
+      </span>
+    </div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+          <label class="form-label">Quantity Change *</label>
+          {{ form.quantity }}
+          <div class="text-muted" style="font-size:0.78rem;margin-top:0.25rem;">{{ form.quantity.help_text }}</div>
+          {% if form.quantity.errors %}<div class="invalid-feedback">{{ form.quantity.errors }}</div>{% endif %}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notes</label>
+          {{ form.notes }}
+        </div>
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary">Apply Adjustment</button>
+          <a href="{% url 'inventory:product_detail' product.pk %}" class="btn btn-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

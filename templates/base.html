@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Inventory Management System{% endblock %}</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  <script>
+    // Apply theme before render to prevent flash
+    (function(){const t=localStorage.getItem('ims_theme')||'light';document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+</head>
+<body>
+<div class="app-wrapper">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-icon">📦</span>
+      <div>
+        <div>InventoryPro</div>
+        <div class="shop-name">{% if current_shop %}{{ current_shop.name }}{% else %}No Shop{% endif %}</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <div class="nav-item"><a href="{% url 'core:dashboard' %}"><span class="nav-icon">🏠</span> Dashboard</a></div>
+
+      <div class="nav-section-label">Inventory</div>
+      <div class="nav-item"><a href="{% url 'inventory:product_list' %}"><span class="nav-icon">📦</span> Products</a></div>
+      <div class="nav-item"><a href="{% url 'inventory:category_list' %}"><span class="nav-icon">🏷️</span> Categories</a></div>
+
+      <div class="nav-section-label">Sales</div>
+      <div class="nav-item"><a href="{% url 'sales:sale_create' %}"><span class="nav-icon">🛒</span> New Sale</a></div>
+      <div class="nav-item"><a href="{% url 'sales:sale_list' %}"><span class="nav-icon">📋</span> Sales History</a></div>
+
+      <div class="nav-section-label">Reports</div>
+      <div class="nav-item"><a href="{% url 'reports:report' %}"><span class="nav-icon">📊</span> Reports</a></div>
+
+      {% if user_role == 'admin' %}
+      <div class="nav-section-label">Admin</div>
+      <div class="nav-item"><a href="{% url 'inventory:shop_list' %}"><span class="nav-icon">🏪</span> Shops</a></div>
+      <div class="nav-item"><a href="{% url 'accounts:user_list' %}"><span class="nav-icon">👥</span> Users</a></div>
+      {% endif %}
+    </nav>
+
+    <div class="sidebar-footer">
+      <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);">
+        {% if request.user.is_authenticated %}
+          Logged in as <strong style="color:rgba(255,255,255,0.8)">{{ request.user.username }}</strong>
+        {% endif %}
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Top Bar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="btn-icon" onclick="toggleSidebar()" title="Toggle sidebar">☰</button>
+        <span class="topbar-title">{% block page_title %}Dashboard{% endblock %}</span>
+      </div>
+      <div class="topbar-right">
+        <!-- Dark mode toggle -->
+        <button class="btn-icon" onclick="toggleTheme()" title="Toggle dark mode">
+          <span id="theme-icon">🌙</span>
+        </button>
+        <!-- Notifications -->
+        <a href="{% url 'core:notifications' %}" class="btn-icon" title="Notifications">
+          🔔
+          {% if unread_notifications > 0 %}
+            <span class="notification-badge">{{ unread_notifications }}</span>
+          {% endif %}
+        </a>
+        <!-- User menu -->
+        <div class="user-menu" onclick="document.getElementById('user-dropdown').classList.toggle('open')">
+          <div class="user-avatar">{{ request.user.username|first|upper }}</div>
+          <div>
+            <div class="user-name">{{ request.user.get_full_name|default:request.user.username }}</div>
+            <div class="user-role">{{ user_role|title }}</div>
+          </div>
+        </div>
+        <form method="post" action="{% url 'accounts:logout' %}" style="margin:0">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-secondary btn-sm" title="Logout">⏻ Logout</button>
+        </form>
+      </div>
+    </header>
+
+    <!-- Messages -->
+    <div class="page-content">
+      {% if messages %}
+        <div class="messages">
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</div>
+
+{% load static %}
+<script src="{% static 'js/main.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>
